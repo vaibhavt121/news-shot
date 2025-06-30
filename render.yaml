@@ -1,1 +1,35 @@
-# Render deploy config
+services:
+  - type: web
+    name: news-shot-api
+    env: python
+    buildCommand: ""
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 10000
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: news-shot-db
+          property: connectionString
+      - key: NEWS_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: worker
+    name: news-shot-worker
+    env: python
+    buildCommand: ""
+    startCommand: python app/cron_runner.py
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: news-shot-db
+          property: connectionString
+      - key: NEWS_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+databases:
+  - name: news-shot-db
